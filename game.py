@@ -1,14 +1,14 @@
 import sys
 import turtle as t
-from random import randint
+from random import choice
 from time import sleep
 
 
-# field settings (настройки поля)
+# field settings
 cell = 50
-# количество ячеек по ширине
+# quantity of cells in width
 width = 16
-# количество ячеек по длине
+# quantity of cells in length
 length = 12
 
 window = t.Screen()
@@ -21,8 +21,7 @@ window.title('CODDY snake')
 window.tracer(0)
 
 
-# строится сетка на поле
-# grid - сетка
+# build a grid on a field
 grid = t.Turtle()
 grid.color('white')
 grid.speed(0)
@@ -69,37 +68,58 @@ apple.shapesize(2)
 apple.penup()
 apple.hideturtle()
 
+
+
+def get_grid_coordinates():
+    field = []
+
+    for l in range(length):
+
+        if l != 0:
+            y = y - cell
+        else:
+            y = cell * (length / 2) - cell / 2
+
+        for w in range(width):
+
+            if w != 0:
+                x = x + cell
+            else:
+                x = -cell * (width / 2) + cell / 2
+
+            coordinates = (x, y)
+            field.append(coordinates)
+
+    return field
+
+
+
+
 def spawn_apple(snake):
+    field = get_grid_coordinates()
 
-    while True:
-        counter = 0
-        x = randint(-int(width / 2 - 1), int(width / 2 - 1))
-        y = randint(-int(length / 2 - 1), int(length / 2 - 1))
+    for i in snake:
+        x_snake = i.pos()[0]
+        y_snake = i.pos()[1]
+        snake_coords = (x_snake, y_snake)
+        if snake_coords in field:
+            field.remove(snake_coords)
 
-        x_apple = x * cell + cell / 2
-        y_apple = y * cell + cell / 2
 
-        for i in snake:
-            if (x_apple == i.pos()[0] and y_apple == i.pos()[1]):
-                counter += 1
-                break
-        if counter == 0:
-            break
-
-    apple.goto(x_apple, y_apple)
+    apple_coordinates = choice(field)
+    apple.setpos(apple_coordinates[0], apple_coordinates[1])
     apple.showturtle()
 
 
 
 
-
-# создаем список-змейку
+# create an initial snake
 snake_head = t.Turtle()
 snake_body1 = t.Turtle()
 snake_body2 = t.Turtle()
 snake_body3 = t.Turtle()
 
-snake_head.color('green')
+snake_head.color('grey')
 snake_body1.color('green')
 snake_body2.color('green')
 snake_body3.color('green')
@@ -131,7 +151,7 @@ snake_body3.setx(cell * 1.5)
 
 snake = [snake_head, snake_body1, snake_body2, snake_body3]
 
-
+# movement direction
 snakex = -1
 snakey = 0
 
@@ -185,13 +205,13 @@ window.update()
 window.tracer(1)
 
 while True:
-
-    # создаем список координат каждого блока змейки (предыдущие координаты)
+    window.tracer(0)
+    # create a list of coordinates of the snake blocks (previous position)
     coords = []
     for i in snake:
         coords.append(i.pos())
 
-
+    # check collision between a snake head and borders
     if ((snake_head.pos()[0] + cell * snakex) - (cell / 2)) < -(width / 2) * cell:
         sys.exit()
 
@@ -206,100 +226,44 @@ while True:
     if ((snake_head.pos()[1] + cell * snakey) - (cell / 2)) < -(length / 2) * cell:
         sys.exit()
 
+
+    # move a snake head in the new posiotion
     snake_head.setpos(snake_head.pos()[0] + cell * snakex, snake_head.pos()[1] + cell * snakey)
 
 
+    for i in snake[1:]:
+        if snake[0].pos() == i.pos():
+            sys.exit()
 
-
-
+    # move other parts of the snake
     for index, part in enumerate(snake[1:]):
         part.goto(coords[index])
+    # show a new added block of the snake
+    snake[-1].showturtle()
 
 
-
-
-
+    # check collision between a snake head and an apple
     if (snake[0].pos()[0] == apple.pos()[0]) and (snake[0].pos()[1] == apple.pos()[1]):
+
+
         apple.hideturtle()
-
-        if snake[-1].pos()[1] == snake[-2].pos()[1]:
-            # змейка движется вправо
-            if snakex == 1:
-                snake_part = add_block()
-                snake_part.setpos(snake[-1].pos()[0] - cell, snake[-1].pos()[1])
-                snake_part.showturtle()
-                snake.append(snake_part)
-
-            # змейка движется влево
-            elif snakex == -1:
-                snake_part = add_block()
-                snake_part.setpos(snake[-1].pos()[0] + cell, snake[-1].pos()[1])
-                snake_part.showturtle()
-                snake.append(snake_part)
-
-        if snake[-1].pos()[0] == snake[-2].pos()[0]:
-            # змейка движется вверх
-            if snakey == 1:
-                snake_part = add_block()
-                snake_part.setpos(snake[-1].pos()[0], snake[-1].pos()[1] - cell)
-                snake_part.showturtle()
-                snake.append(snake_part)
-            # змейка движется вниз
-            elif snakey == -1:
-                snake_part = add_block()
-                snake_part.setpos(snake[-1].pos()[0], snake[-1].pos()[1] + cell)
-                snake_part.showturtle()
-                snake.append(snake_part)
-
-
-        if (snake[0].pos()[1] == 1) and (snake[-2].pos()[1] == snake[-1].pos()[1]):
-
-            if snake[-1].pos()[0] < snake[-2].pos()[0]:
-                snake_part = add_block()
-                snake_part.setpos(snake[-1].pos()[0] - cell, snake[-1].pos()[1])
-                snake_part.showturtle()
-                snake.append(snake_part)
-            elif snake[-1].pos()[0] > snake[-2].pos()[0]:
-                snake_part = add_block()
-                snake_part.setpos(snake[-1].pos()[0] + cell, snake[-1].pos()[1])
-                snake_part.showturtle()
-                snake.append(snake_part)
-
-
-        if ((snake[0].pos()[0] == -1) or (snake[0].pos()[0] == 1))  and (snake[-2].pos()[0] == snake[-1].pos()[0]):
-            snake_part = add_block()
-            snake_part.setpos(snake[-1].pos()[0], snake[-1].pos()[1] + cell)
-            snake_part.showturtle()
-            snake.append(snake_part)
-
-
-        if (snake[0].pos()[1] == -1) and (snake[-2].pos()[1] == snake[-1].pos()[1]):
-
-            if snake[-1].pos()[0] < snake[-2].pos()[0]:
-                snake_part = add_block()
-                snake_part.setpos(snake[-1].pos()[0] - cell, snake[-1].pos()[1])
-                snake_part.showturtle()
-                snake.append(snake_part)
-            elif snake[-1].pos()[0] > snake[-2].pos()[0]:
-                snake_part = add_block()
-                snake_part.setpos(snake[-1].pos()[0] + cell, snake[-1].pos()[1])
-                snake_part.showturtle()
-                snake.append(snake_part)
+        snake_part = add_block()
+        snake.append(snake_part)
 
         spawn_apple(snake)
 
 
 
-
-
-
-
-
-
     t.listen()
-    sleep(0.15)
+    sleep(0.2)
 
-t.mainloop()
+
+
+
+
+    window.update()
+
+
 
 
 
