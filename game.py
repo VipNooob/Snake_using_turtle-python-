@@ -4,6 +4,7 @@ from random import choice
 from time import sleep
 
 
+start = False
 # field settings
 cell = 50
 # quantity of cells in width
@@ -158,6 +159,26 @@ snakey = 0
 
 spawn_apple(snake)
 
+start_writer = t.Turtle()
+start_writer.hideturtle()
+start_writer.penup()
+start_writer.goto(-3 * cell, (length / 2) * cell + cell / 3)
+start_writer.color('blue')
+start_writer.write('Press "space" to start the game', font='Arial 18')
+
+
+score = 0
+score_writer = t.Turtle()
+score_writer.hideturtle()
+score_writer.penup()
+score_writer.goto(-0.8 * cell, -(length / 2) * cell - cell / 1.3)
+score_writer.color('red')
+score_writer.write(f'Score: {score}', font='Arial 18')
+
+
+
+
+
 
 def go_up():
     global snakex, snakey
@@ -183,11 +204,18 @@ def go_left():
         snakex = -1
         snakey = 0
 
+
+def start_game():
+    global start
+    start = True
+
+
+
 t.onkey(go_up, 'Up')
 t.onkey(go_down, 'Down')
 t.onkey(go_right, 'Right')
 t.onkey(go_left, 'Left')
-
+t.onkey(start_game, 'space')
 
 def add_block():
     """increase the length of the snake"""
@@ -201,70 +229,74 @@ def add_block():
     return block
 
 
+t.listen()
 window.update()
 window.tracer(1)
 
+
+
 while True:
-    window.tracer(0)
-    # create a list of coordinates of the snake blocks (previous position)
-    coords = []
-    for i in snake:
-        coords.append(i.pos())
 
-    # check collision between a snake head and borders
-    if ((snake_head.pos()[0] + cell * snakex) - (cell / 2)) < -(width / 2) * cell:
-        sys.exit()
+    if start == True:
+        start_writer.clear()
 
-    if ((snake_head.pos()[0] + cell * snakex) + (cell / 2)) > (width / 2) * cell:
-        sys.exit()
+        window.tracer(0)
+        # create a list of coordinates of the snake blocks (previous position)
+        coords = []
+        for i in snake:
+            coords.append(i.pos())
 
-
-    if ((snake_head.pos()[1] + cell * snakey) + (cell / 2)) > (length / 2) * cell:
-        sys.exit()
-
-
-    if ((snake_head.pos()[1] + cell * snakey) - (cell / 2)) < -(length / 2) * cell:
-        sys.exit()
-
-
-    # move a snake head in the new posiotion
-    snake_head.setpos(snake_head.pos()[0] + cell * snakex, snake_head.pos()[1] + cell * snakey)
-
-
-    for i in snake[1:]:
-        if snake[0].pos() == i.pos():
+        # check collision between a snake head and borders
+        if ((snake_head.pos()[0] + cell * snakex) - (cell / 2)) < -(width / 2) * cell:
             sys.exit()
 
-    # move other parts of the snake
-    for index, part in enumerate(snake[1:]):
-        part.goto(coords[index])
-    # show a new added block of the snake
-    snake[-1].showturtle()
+        if ((snake_head.pos()[0] + cell * snakex) + (cell / 2)) > (width / 2) * cell:
+            sys.exit()
 
 
-    # check collision between a snake head and an apple
-    if (snake[0].pos()[0] == apple.pos()[0]) and (snake[0].pos()[1] == apple.pos()[1]):
+        if ((snake_head.pos()[1] + cell * snakey) + (cell / 2)) > (length / 2) * cell:
+            sys.exit()
 
 
-        apple.hideturtle()
-        snake_part = add_block()
-        snake.append(snake_part)
-
-        spawn_apple(snake)
+        if ((snake_head.pos()[1] + cell * snakey) - (cell / 2)) < -(length / 2) * cell:
+            sys.exit()
 
 
-
-    t.listen()
-    sleep(0.2)
-
+        # move a snake head in the new posiotion
+        snake_head.setpos(snake_head.pos()[0] + cell * snakex, snake_head.pos()[1] + cell * snakey)
 
 
+        for i in snake[1:]:
+            if snake[0].pos() == i.pos():
+                sys.exit()
 
+        # move other parts of the snake
+        for index, part in enumerate(snake[1:]):
+            part.goto(coords[index])
+        # show a new added block of the snake
+        snake[-1].showturtle()
+
+
+        # check collision between a snake head and an apple
+        if (snake[0].pos()[0] == apple.pos()[0]) and (snake[0].pos()[1] == apple.pos()[1]):
+            score += 1
+            score_writer.clear()
+            score_writer.write(f'Score: {score}', font='Arial 18')
+
+
+            apple.hideturtle()
+            snake_part = add_block()
+            snake.append(snake_part)
+
+            spawn_apple(snake)
+
+        sleep(0.2)
 
     window.update()
+    t.listen()
 
 
-
+window.mainloop()
 
 
 
